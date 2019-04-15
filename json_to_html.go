@@ -13,12 +13,12 @@ import (
 func main() {
 	url := "http://jsonplaceholder.typicode.com/posts"
 
-	data := getFromUrl(url)
-	writeToFile(data)
+	data := GetFromUrl(url)
+	WriteToFile(data)
 }
 
 
-func getFromUrl(url string) []byte {
+func GetFromUrl(url string) []byte {
 	response, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)
@@ -32,7 +32,7 @@ func getFromUrl(url string) []byte {
 }
 
 
-func writeToFile(content []byte) {
+func WriteToFile(content []byte) {
 	//program writes to dir\posts; dir being the directory where
 	//the program is placed
 	
