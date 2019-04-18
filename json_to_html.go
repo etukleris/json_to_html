@@ -13,53 +13,53 @@ import (
 func main() {
 	url := "http://jsonplaceholder.typicode.com/posts"
 
-	data := GetFromUrl(url)
-	WriteToFile(data)
+	data, err := getFromUrl(url)
+	if err == nil {
+		writeToFile(data)
+	}
 }
+	
 
-
-func GetFromUrl(url string) []byte {
+func getFromUrl(url string) ([]byte, error) {
 	response, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)
+		return nil, err
 	}
 	result, err := ioutil.ReadAll(response.Body)
 	response.Body.Close()
 	if err != nil {
 		fmt.Println(err)
+		return nil, err
 	}
-	return result
+	return result, nil
 }
 
 
-func WriteToFile(content []byte) {
-	//program writes to dir\posts; dir being the directory where
+	//program writes to current_dir\posts; currnent_dir being the directory where
 	//the program is placed
-	
-	//get current dir
-	dir, err := os.Getwd()
-	if err != nil {
-		fmt.Println(err)
-	}
-	//check if posts folder exists in current dir;
-	//otherwise create it
-	postsDir := dir + "\\posts\\"
-	if _, err := os.Stat(postsDir); os.IsNotExist(err) {
+
+func writeToFile(content []byte) {
+
+	postsDir := "posts/"
+	if !fileExists(postsDir){
 		os.Mkdir(postsDir, os.ModePerm)
 	}
+	
 	//generate filename
 	t := time.Now() 
 	n:=1
 	outputFile := fmt.Sprintf("%sp_%d%02d%02d_%d.html",
-		postsDir, t.Year(), t.Month(), t.Day(),n)
-	
+		postsDir, t.Year(), t.Month(), t.Day(), n)
+
 	//loop to check if filename exists
+	//if file exists, increment n and rename current file
 	for {
-		if _, err := os.Stat(outputFile); err == nil {
-			//if file exists, increment n and rename current file
+		
+		if fileExists(outputFile) {
 			n+=1
 			outputFile = fmt.Sprintf("%sp_%d%02d%02d_%d.html",
-			postsDir, t.Year(), t.Month(), t.Day(),n)
+			postsDir, t.Year(), t.Month(), t.Day(),n)	
 		} else { break }
 		
 	}
@@ -70,33 +70,19 @@ func WriteToFile(content []byte) {
         fmt.Println(err)
         return
     }
+	
+	defer f.Close()
+	
 	//write html and body tags to file 
-    _, err = f.WriteString("<html>")
+    _, err = f.WriteString("<html>\n\n<body>\n\n")
     if err != nil {
         fmt.Println(err)
-        f.Close()
         return
     }
-	_, err = f.WriteString("\n\n")
-    if err != nil {
-        fmt.Println(err)
-        f.Close()
-        return
-    }
-	_, err = f.WriteString("<body>")
-    if err != nil {
-        fmt.Println(err)
-        f.Close()
-        return
-    }
- 	_, err = f.WriteString("\n\n")
-    if err != nil {
-        fmt.Println(err)
-        f.Close()
-        return
-    } 
+
 	
 	//struct for json; further code to extract info from content variable
+	//>> shouldn't really be called person and people but oh well	
 	jsonByteSlice := content
 	type Person struct {
 			userId int
@@ -111,7 +97,8 @@ func WriteToFile(content []byte) {
 	err = json.Unmarshal(jsonByteSlice, &personMap)
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return
 	}
 
 	for _, personData := range personMap {
@@ -123,42 +110,42 @@ func WriteToFile(content []byte) {
 		p.id, _ = strconv.Atoi(fmt.Sprintf("%v", personData["id"]))
 		p.title = fmt.Sprintf("%s", personData["title"])
 		p.body = fmt.Sprintf("%s", personData["body"])
-		people = append(people, p)
+		people	 = append(people, p)
 
 	 }
 	 //write data to the file; using title and body as task requests
 	for _, person := range people{
 	
-		_, err = f.WriteString("<h1>" + person.title + "</h1>")
+		_, err = f.WriteString("<h1>" + person.title + "</h1>\n\n")
 		if err != nil {
 			fmt.Println(err)
-			f.Close()
 			return
 		} 
-		_, err = f.WriteString("\n\n")
+
+		_, err = f.WriteString("<p>" + person.body + "</p>\n\n")
 		if err != nil {
 			fmt.Println(err)
-			f.Close()
 			return
 		} 
-		_, err = f.WriteString("<p>" + person.body + "</p>")
-		if err != nil {
-			fmt.Println(err)
-			f.Close()
-			return
-		} 
-		_, err = f.WriteString("\n\n")
-		if err != nil {
-			fmt.Println(err)
-			f.Close()
-			return
-		} 
+
 	}
-    err = f.Close()
+	    _, err = f.WriteString("</html>\n\n</body>\n\n")
     if err != nil {
         fmt.Println(err)
         return
-   }
-	
-	
-} 
+    }
+
+
+}
+
+
+//function to check if file exists
+func fileExists(filename string) bool {
+	info, err := os.Stat(	filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
+
