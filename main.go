@@ -15,8 +15,8 @@ func main() {
 	data, err := getFromUrl(url)
 	if err == nil {
 		err = writeToFile(data)
-            if err != nil {
-                fmt.Println("There was an error: ", err)
+            	if err != nil {
+                	fmt.Println("There was an error: ", err)
             }
 	}
 }
