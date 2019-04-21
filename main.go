@@ -84,16 +84,15 @@ func writeToFile(jsonByteSlice []byte) error {
 
 	
 	//struct for json; further code to extract info from content variable
-	//>> shouldn't really be called person and people but oh well	
-	type Person struct {
+	type Post struct {
 			UserId int
 			Id  int
 			Title  string
 			Body  string
          }
-	var people []Person
+	var posts []Post
 
-	err = json.Unmarshal(jsonByteSlice, &people)
+	err = json.Unmarshal(jsonByteSlice, &posts)
 
 	if err != nil {
 		fmt.Println(err)
@@ -101,10 +100,10 @@ func writeToFile(jsonByteSlice []byte) error {
 	}
 
 	 //write data to the file; using title and body as task requests
-	for _, person := range people{
+	for _, postData := range posts{
 	
-		_, err = f.WriteString("<h1>" + person.Title + "</h1>\n\n" +
-                               "<p>" + person.Body + "</p>\n\n")
+		_, err = f.WriteString("<h1>" + postData.Title + "</h1>\n\n" +
+                               "<p>" + postData.Body + "</p>\n\n")
 		if err != nil {
 			fmt.Println(err)
 			return err
@@ -124,7 +123,7 @@ func writeToFile(jsonByteSlice []byte) error {
 
 //function to check if file exists
 func fileExists(filename string) bool {
-	info, err := os.Stat(	filename)
+	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
 		return false
 	}
